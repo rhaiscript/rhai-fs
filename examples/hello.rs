@@ -17,7 +17,7 @@ fn main() -> Result<(), Box<EvalAltResult>> {
     engine.run(
         r#"
     let file = open_file(path("hello.txt")); 
-    print(file.read_to_string())"#,
+    print(file.read_string())"#,
     )?;
 
     Ok(())

@@ -98,7 +98,7 @@ pub mod file_functions {
         std::fs::remove_file(path).map_err(|e| e.to_string().into())
     }
 
-    #[rhai_fn(pure, return_raw)]
+    #[rhai_fn(pure, return_raw, name = "read_string")]
     pub fn read_to_string(
         ctx: NativeCallContext,
         file: &mut SharedFile,
@@ -106,7 +106,7 @@ pub mod file_functions {
         read_to_string_with_len(ctx, file, 0)
     }
 
-    #[rhai_fn(pure, return_raw, name = "read_to_string")]
+    #[rhai_fn(pure, return_raw, name = "read_string")]
     pub fn read_to_string_with_len(
         ctx: NativeCallContext,
         file: &mut SharedFile,
@@ -171,7 +171,7 @@ pub mod file_functions {
     pub mod blob_functions {
         use rhai::Blob;
 
-        #[rhai_fn(pure, return_raw)]
+        #[rhai_fn(pure, return_raw, name = "read_blob")]
         pub fn read_to_blob(
             ctx: NativeCallContext,
             file: &mut SharedFile,
@@ -179,7 +179,7 @@ pub mod file_functions {
             read_to_blob_with_len(ctx, file, 0)
         }
 
-        #[rhai_fn(pure, return_raw, name = "read_to_blob")]
+        #[rhai_fn(pure, return_raw, name = "read_blob")]
         pub fn read_to_blob_with_len(
             ctx: NativeCallContext,
             file: &mut SharedFile,

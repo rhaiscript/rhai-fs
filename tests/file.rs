@@ -21,7 +21,7 @@ fn test_reading_file() -> Result<(), Box<EvalAltResult>> {
     scope.push_constant("FILE", shared_file);
 
     assert_eq!(
-        engine.eval_with_scope::<String>(&mut scope, r#"FILE.read_to_string()"#)?,
+        engine.eval_with_scope::<String>(&mut scope, r#"FILE.read_string()"#)?,
         "This is a test!"
     );
 
@@ -29,7 +29,7 @@ fn test_reading_file() -> Result<(), Box<EvalAltResult>> {
     assert_eq!(
         engine
             .set_max_string_size(4)
-            .eval_with_scope::<String>(&mut scope, r#"FILE.seek(0); FILE.read_to_string()"#)?,
+            .eval_with_scope::<String>(&mut scope, r#"FILE.seek(0); FILE.read_string()"#)?,
         "This"
     );
 
@@ -37,10 +37,7 @@ fn test_reading_file() -> Result<(), Box<EvalAltResult>> {
     assert_eq!(
         engine
             .set_max_string_size(16)
-            .eval_with_scope::<rhai::INT>(
-                &mut scope,
-                r#"FILE.seek(0); FILE.read_to_string().len"#
-            )?,
+            .eval_with_scope::<rhai::INT>(&mut scope, r#"FILE.seek(0); FILE.read_string().len"#)?,
         15
     );
 
@@ -83,7 +80,7 @@ fn test_seeking_file() -> Result<(), Box<EvalAltResult>> {
     scope.push_constant("FILE", shared_file);
 
     assert_eq!(
-        engine.eval_with_scope::<String>(&mut scope, r#"FILE.seek(1); FILE.read_to_string()"#)?,
+        engine.eval_with_scope::<String>(&mut scope, r#"FILE.seek(1); FILE.read_string()"#)?,
         "This is a test!"
     );
 
@@ -110,7 +107,7 @@ fn test_blob_file() -> Result<(), Box<EvalAltResult>> {
     scope.push_constant("FILE", shared_file);
 
     assert_eq!(
-        engine.eval_with_scope::<rhai::Blob>(&mut scope, r#"FILE.read_to_blob()"#)?,
+        engine.eval_with_scope::<rhai::Blob>(&mut scope, r#"FILE.read_blob()"#)?,
         &[1, 2, 3, 4, 5, 6, 7, 8, 9]
     );
 
@@ -118,7 +115,7 @@ fn test_blob_file() -> Result<(), Box<EvalAltResult>> {
     assert_eq!(
         engine
             .set_max_array_size(4)
-            .eval_with_scope::<rhai::Blob>(&mut scope, r#"FILE.seek(0); FILE.read_to_blob()"#)?,
+            .eval_with_scope::<rhai::Blob>(&mut scope, r#"FILE.seek(0); FILE.read_blob()"#)?,
         &[1, 2, 3, 4]
     );
 
@@ -126,7 +123,7 @@ fn test_blob_file() -> Result<(), Box<EvalAltResult>> {
     assert_eq!(
         engine
             .set_max_array_size(16)
-            .eval_with_scope::<rhai::INT>(&mut scope, r#"FILE.seek(0); FILE.read_to_blob().len"#)?,
+            .eval_with_scope::<rhai::INT>(&mut scope, r#"FILE.seek(0); FILE.read_blob().len"#)?,
         16
     );
 
