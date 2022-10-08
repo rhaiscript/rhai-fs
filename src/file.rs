@@ -21,6 +21,16 @@ pub mod file_functions {
         open_file_with_opts(path, "w+")
     }
 
+    /// Creates or opens a file for reading and writing.
+    #[rhai_fn(return_raw, name = "open_file")]
+    pub fn open_file_str(
+        ctx: NativeCallContext,
+        path_raw: ImmutableString,
+    ) -> Result<SharedFile, Box<EvalAltResult>> {
+        let path = ctx.call_fn::<PathBuf>("path", (path_raw,))?;
+        open_file(path)
+    }
+
     /// Available options for opening a file.
     ///
     /// | Flag | Access        | Creation |
@@ -59,6 +69,30 @@ pub mod file_functions {
         }
     }
 
+    /// Available options for opening a file.
+    ///
+    /// | Flag | Access        | Creation |
+    /// | :--: | ------------- | :------: |
+    /// | r    | Read only     | No       |
+    /// | r+   | Read & write  | No       |
+    /// | w    | Write only    | Yes      |
+    /// | wx   | Write only    | Required |
+    /// | w+   | Read & write  | Yes      |
+    /// | a    | Append only   | Yes      |
+    /// | ax   | Append only   | Required |
+    /// | a+   | Read & append | Yes      |
+    /// | ax+  | Read & append | Required |
+    ///
+    #[rhai_fn(return_raw, name = "open_file")]
+    pub fn open_file_with_opts_str(
+        ctx: NativeCallContext,
+        path_raw: ImmutableString,
+        options: &str,
+    ) -> Result<SharedFile, Box<EvalAltResult>> {
+        let path = ctx.call_fn::<PathBuf>("path", (path_raw,))?;
+        open_file_with_opts(path, options)
+    }
+
     #[rhai_fn(return_raw)]
     pub fn remove_file(path: PathBuf) -> Result<(), Box<EvalAltResult>> {
         std::fs::remove_file(path).map_err(|e| e.to_string().into())
@@ -69,9 +103,39 @@ pub mod file_functions {
         ctx: NativeCallContext,
         file: &mut SharedFile,
     ) -> Result<String, Box<EvalAltResult>> {
-        let mut buf = String::new();
-        match file.borrow_mut().read_to_string(&mut buf) {
-            Ok(_) => Ok(buf.split_off(ctx.engine().max_string_size())),
+        read_to_string_with_len(ctx, file, 0)
+    }
+
+    #[rhai_fn(pure, return_raw, name = "read_to_string")]
+    pub fn read_to_string_with_len(
+        ctx: NativeCallContext,
+        file: &mut SharedFile,
+        len: rhai::INT,
+    ) -> Result<String, Box<EvalAltResult>> {
+        let mut buf: Vec<u8> = Vec::new();
+
+        let max_len = ctx.engine().max_string_size();
+        let res = match max_len {
+            0 if len == 0 => file.borrow_mut().read_to_end(&mut buf),
+            0 if len > 0 => {
+                buf.resize(len as usize, 0);
+                file.borrow_mut().read(&mut buf)
+            }
+            _ if len == 0 => {
+                buf.resize(max_len, 0);
+                file.borrow_mut().read(&mut buf)
+            }
+            _ => {
+                buf.resize(max_len.min(len as usize), 0);
+                file.borrow_mut().read(&mut buf)
+            }
+        };
+
+        match res {
+            Ok(read_len) => {
+                buf.truncate(read_len);
+                String::from_utf8(buf).map_err(|e| e.to_string().into())
+            }
             Err(e) => Err(format!("{}", &e).into()),
         }
     }
@@ -108,22 +172,39 @@ pub mod file_functions {
         use rhai::Blob;
 
         #[rhai_fn(pure, return_raw)]
-        pub fn read_to_blob(file: &mut SharedFile) -> Result<Blob, Box<EvalAltResult>> {
-            let mut buf: Blob = Blob::new();
-            match file.borrow_mut().read_to_end(&mut buf) {
-                Ok(_) => Ok(buf),
-                Err(e) => Err(format!("{}", &e).into()),
-            }
+        pub fn read_to_blob(
+            ctx: NativeCallContext,
+            file: &mut SharedFile,
+        ) -> Result<Blob, Box<EvalAltResult>> {
+            read_to_blob_with_len(ctx, file, 0)
         }
 
-        #[rhai_fn(pure, return_raw)]
+        #[rhai_fn(pure, return_raw, name = "read_to_blob")]
         pub fn read_to_blob_with_len(
+            ctx: NativeCallContext,
             file: &mut SharedFile,
             len: rhai::INT,
         ) -> Result<Blob, Box<EvalAltResult>> {
-            let mut buf: Blob = Blob::new();
-            buf.resize(len as usize, 0);
-            match file.borrow_mut().read(&mut buf) {
+            let mut buf: Vec<u8> = Vec::new();
+
+            let max_len = ctx.engine().max_array_size();
+            let res = match max_len {
+                0 if len == 0 => file.borrow_mut().read_to_end(&mut buf),
+                0 if len > 0 => {
+                    buf.resize(len as usize, 0);
+                    file.borrow_mut().read(&mut buf)
+                }
+                _ if len == 0 => {
+                    buf.resize(max_len, 0);
+                    file.borrow_mut().read(&mut buf)
+                }
+                _ => {
+                    buf.resize(max_len.min(len as usize), 0);
+                    file.borrow_mut().read(&mut buf)
+                }
+            };
+
+            match res {
                 Ok(_) => Ok(buf),
                 Err(e) => Err(format!("{}", &e).into()),
             }

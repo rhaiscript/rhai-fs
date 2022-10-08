@@ -25,6 +25,25 @@ fn test_reading_file() -> Result<(), Box<EvalAltResult>> {
         "This is a test!"
     );
 
+    // Max string size is respected.
+    assert_eq!(
+        engine
+            .set_max_string_size(4)
+            .eval_with_scope::<String>(&mut scope, r#"FILE.seek(0); FILE.read_to_string()"#)?,
+        "This"
+    );
+
+    // Lengths under max string size are respected.
+    assert_eq!(
+        engine
+            .set_max_string_size(16)
+            .eval_with_scope::<rhai::INT>(
+                &mut scope,
+                r#"FILE.seek(0); FILE.read_to_string().len"#
+            )?,
+        15
+    );
+
     Ok(())
 }
 
@@ -93,6 +112,22 @@ fn test_blob_file() -> Result<(), Box<EvalAltResult>> {
     assert_eq!(
         engine.eval_with_scope::<rhai::Blob>(&mut scope, r#"FILE.read_to_blob()"#)?,
         &[1, 2, 3, 4, 5, 6, 7, 8, 9]
+    );
+
+    // Max array size is respected.
+    assert_eq!(
+        engine
+            .set_max_array_size(4)
+            .eval_with_scope::<rhai::Blob>(&mut scope, r#"FILE.seek(0); FILE.read_to_blob()"#)?,
+        &[1, 2, 3, 4]
+    );
+
+    // Lengths under max string size are not respected.
+    assert_eq!(
+        engine
+            .set_max_array_size(16)
+            .eval_with_scope::<rhai::INT>(&mut scope, r#"FILE.seek(0); FILE.read_to_blob().len"#)?,
+        16
     );
 
     Ok(())
