@@ -93,11 +93,36 @@ pub mod file_functions {
         open_file_with_opts(path, options)
     }
 
+    /// Remove a file at the given path.
+    ///
+    /// Throws an exception when:
+    /// - The path points to a directory.
+    /// - The file doesn't exist.
+    /// - The user lacks permissions to remove the file.
     #[rhai_fn(return_raw)]
     pub fn remove_file(path: PathBuf) -> Result<(), Box<EvalAltResult>> {
         std::fs::remove_file(path).map_err(|e| e.to_string().into())
     }
 
+    /// Remove a file at the given path.
+    ///
+    /// Throws an exception when:
+    /// - The path points to a directory.
+    /// - The file doesn't exist.
+    /// - The user lacks permissions to remove the file.
+    #[rhai_fn(return_raw)]
+    pub fn remove_file_str(
+        ctx: NativeCallContext,
+        path_raw: ImmutableString,
+    ) -> Result<(), Box<EvalAltResult>> {
+        let path = ctx.call_fn::<PathBuf>("path", (path_raw,))?;
+        std::fs::remove_file(path).map_err(|e| e.to_string().into())
+    }
+
+    /// Reads from the current stream position until EOF and returns it as a string, respects the engine's `max_string_size`.
+    ///
+    /// Throws an exception when:
+    /// - The read function encounters an I/O error.
     #[rhai_fn(pure, return_raw, name = "read_string")]
     pub fn read_to_string(
         ctx: NativeCallContext,
@@ -106,6 +131,10 @@ pub mod file_functions {
         read_to_string_with_len(ctx, file, 0)
     }
 
+    /// Reads from the current stream position up to the passed `len` and returns it as a string, respects the engine's `max_string_size`.
+    ///
+    /// Throws an exception when:
+    /// - The read function encounters an I/O error.
     #[rhai_fn(pure, return_raw, name = "read_string")]
     pub fn read_to_string_with_len(
         ctx: NativeCallContext,
@@ -140,6 +169,10 @@ pub mod file_functions {
         }
     }
 
+    /// Writes the string into the file at the current stream position.
+    ///
+    /// Throws an exception when:
+    /// - The write function encounters an I/O error.
     #[rhai_fn(pure, return_raw, name = "write")]
     pub fn write_with_string(
         file: &mut SharedFile,
@@ -151,6 +184,10 @@ pub mod file_functions {
         }
     }
 
+    /// Sets the stream to the provided position, relative to the start of the file.
+    ///
+    /// Throws an exception when:
+    /// - Seeking to a negative position.
     #[rhai_fn(pure, return_raw)]
     pub fn seek(file: &mut SharedFile, pos: rhai::INT) -> Result<rhai::INT, Box<EvalAltResult>> {
         match file.borrow_mut().seek(std::io::SeekFrom::Start(pos as u64)) {
@@ -159,6 +196,7 @@ pub mod file_functions {
         }
     }
 
+    /// Returns the current stream position.
     #[rhai_fn(pure, return_raw)]
     pub fn position(file: &mut SharedFile) -> Result<rhai::INT, Box<EvalAltResult>> {
         match file.borrow_mut().stream_position() {
@@ -167,6 +205,7 @@ pub mod file_functions {
         }
     }
 
+    /// Returns the size of the file, in bytes.
     #[rhai_fn(pure, return_raw)]
     pub fn bytes(file: &mut SharedFile) -> Result<rhai::INT, Box<EvalAltResult>> {
         match file.borrow().metadata() {
@@ -179,6 +218,7 @@ pub mod file_functions {
     pub mod blob_functions {
         use rhai::Blob;
 
+        /// Reads from the current stream position until EOF and returns it as a `Blob`, respects the engine's `max_array_size`.
         #[rhai_fn(pure, return_raw, name = "read_blob")]
         pub fn read_to_blob(
             ctx: NativeCallContext,
@@ -187,6 +227,7 @@ pub mod file_functions {
             read_to_blob_with_len(ctx, file, 0)
         }
 
+        /// Reads from the current stream position up to the passed `len` and returns it as a `Blob`, respects the engine's `max_array_size`.
         #[rhai_fn(pure, return_raw, name = "read_blob")]
         pub fn read_to_blob_with_len(
             ctx: NativeCallContext,
@@ -218,6 +259,7 @@ pub mod file_functions {
             }
         }
 
+        /// Writes the blob into the file at the current stream position.
         #[rhai_fn(pure, return_raw, name = "write")]
         pub fn write_with_blob(
             file: &mut SharedFile,

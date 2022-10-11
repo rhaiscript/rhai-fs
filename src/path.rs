@@ -1,43 +1,52 @@
 use rhai::plugin::*;
 
 #[export_module]
+#[allow(clippy::ptr_arg)]
 pub mod path_functions {
     use std::path::{Path, PathBuf};
 
+    /// Creates a path from the passed string.
     pub fn path(path: &str) -> PathBuf {
         PathBuf::from(path.to_string())
     }
 
+    /// Returns `true` if path points to something in the filesystem (a file or directory) so long as the current process can access it.
     #[rhai_fn(pure, get = "exists")]
     pub fn exists(path: &mut PathBuf) -> bool {
         path.exists()
     }
 
+    /// Returns the canonical, absolute form of the path with all intermediate components normalized and symbolic links resolved.
     #[rhai_fn(pure, return_raw)]
     pub fn canonicalize(path: &mut PathBuf) -> Result<PathBuf, Box<EvalAltResult>> {
         path.canonicalize().map_err(|e| e.to_string().into())
     }
 
+    /// Returns true if the Path is absolute, i.e., if it is independent of the current directory.
     #[rhai_fn(pure, get = "is_absolute")]
     pub fn is_absolute(path: &mut PathBuf) -> bool {
         path.is_absolute()
     }
 
+    /// Returns true if the path exists on disk and is pointing at a directory.
     #[rhai_fn(pure, get = "is_dir")]
     pub fn is_dir(path: &mut PathBuf) -> bool {
         path.is_dir()
     }
 
+    /// Returns true if the path exists on disk and is pointing at a regular file.
     #[rhai_fn(pure, get = "is_file")]
     pub fn is_file(path: &mut PathBuf) -> bool {
         path.is_file()
     }
 
+    /// Returns true if the Path is relative, i.e., not absolute.
     #[rhai_fn(pure, get = "is_relative")]
     pub fn is_relative(path: &mut PathBuf) -> bool {
         path.is_relative()
     }
 
+    /// Returns true if the Path is relative, i.e., not absolute.
     #[rhai_fn(pure, get = "is_symlink")]
     pub fn is_symlink(path: &mut PathBuf) -> bool {
         path.is_symlink()
