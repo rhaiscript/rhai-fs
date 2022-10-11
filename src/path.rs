@@ -4,7 +4,6 @@ use rhai::plugin::*;
 pub mod path_functions {
     use std::path::{Path, PathBuf};
 
-    #[rhai_fn()]
     pub fn path(path: &str) -> PathBuf {
         PathBuf::from(path.to_string())
     }
