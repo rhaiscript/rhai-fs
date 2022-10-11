@@ -160,6 +160,14 @@ pub mod file_functions {
     }
 
     #[rhai_fn(pure, return_raw)]
+    pub fn position(file: &mut SharedFile) -> Result<rhai::INT, Box<EvalAltResult>> {
+        match file.borrow_mut().stream_position() {
+            Ok(pos) => convert_to_int(pos),
+            Err(e) => Err(format!("{}", &e).into()),
+        }
+    }
+
+    #[rhai_fn(pure, return_raw)]
     pub fn bytes(file: &mut SharedFile) -> Result<rhai::INT, Box<EvalAltResult>> {
         match file.borrow().metadata() {
             Ok(md) => convert_to_int(md.len()),
