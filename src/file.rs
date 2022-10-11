@@ -1,3 +1,4 @@
+#[allow(unused_imports)]
 use rhai::plugin::*;
 
 fn convert_to_int(val: impl TryInto<rhai::INT>) -> Result<rhai::INT, Box<EvalAltResult>> {

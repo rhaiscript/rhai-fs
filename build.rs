@@ -2,6 +2,7 @@
 
 use std::fs::File;
 
+#[allow(unused)]
 fn main() {
     // Update if needed
     println!("cargo:rerun-if-changed=src");
@@ -119,17 +120,17 @@ mod doc_gen {
                 // Check if there are multiple arities, and if so add a header and indent
                 if idx < function_list.len() - 1 {
                     if name == function_list[idx + 1].name && !indented {
-                        write!(writer, "## `{name}`\n").expect("Cannot write to {doc_file}");
+                        writeln!(writer, "## `{name}`").expect("Cannot write to {doc_file}");
                         indented = true;
                     }
                 }
 
                 // Print definition with right level of indentation
                 if indented {
-                    write!(writer, "### `{signature}`\n\n{comments}\n")
+                    writeln!(writer, "### `{signature}`\n\n{comments}")
                         .expect("Cannot write to {doc_file}");
                 } else {
-                    write!(writer, "## `{signature}`\n{comments}\n")
+                    writeln!(writer, "## `{signature}`\n{comments}")
                         .expect("Cannot write to {doc_file}");
                 }
 
