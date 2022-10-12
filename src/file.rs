@@ -22,7 +22,7 @@ pub mod file_functions {
         open_file_with_opts(path, "w+")
     }
 
-    /// Creates or opens a file for reading and writing.
+    /// Helper function for `open_file(path)` that takes a string instead of [PathBuf].
     #[rhai_fn(return_raw, name = "open_file")]
     pub fn open_file_str(
         ctx: NativeCallContext,
@@ -70,20 +70,7 @@ pub mod file_functions {
         }
     }
 
-    /// Available options for opening a file.
-    ///
-    /// | Flag | Access        | Creation |
-    /// | :--: | ------------- | :------: |
-    /// | r    | Read only     | No       |
-    /// | r+   | Read & write  | No       |
-    /// | w    | Write only    | Yes      |
-    /// | wx   | Write only    | Required |
-    /// | w+   | Read & write  | Yes      |
-    /// | a    | Append only   | Yes      |
-    /// | ax   | Append only   | Required |
-    /// | a+   | Read & append | Yes      |
-    /// | ax+  | Read & append | Required |
-    ///
+    /// Helper function for `open_file(path, options)` that takes a string instead of [PathBuf].
     #[rhai_fn(return_raw, name = "open_file")]
     pub fn open_file_with_opts_str(
         ctx: NativeCallContext,
@@ -105,12 +92,7 @@ pub mod file_functions {
         std::fs::remove_file(path).map_err(|e| e.to_string().into())
     }
 
-    /// Remove a file at the given path.
-    ///
-    /// Throws an exception when:
-    /// - The path points to a directory.
-    /// - The file doesn't exist.
-    /// - The user lacks permissions to remove the file.
+    /// Helper function for `remove_file` that takes a string instead of [PathBuf].
     #[rhai_fn(return_raw)]
     pub fn remove_file_str(
         ctx: NativeCallContext,
