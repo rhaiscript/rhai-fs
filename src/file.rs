@@ -272,9 +272,4 @@ pub mod file_functions {
             }
         }
     }
-
-    #[cfg(feature = "callbacks")]
-    pub mod callback_functions {
-        // TODO: Add callbacks (on_close, on_write)
-    }
 }
