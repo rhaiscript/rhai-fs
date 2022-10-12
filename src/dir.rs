@@ -11,6 +11,16 @@ pub mod dir_functions {
         std::fs::create_dir_all(path).map_err(|e| e.to_string().into())
     }
 
+    /// Helper function for `create_dir` that takes a string instead of [PathBuf].
+    #[rhai_fn(return_raw, name = "create_dir")]
+    pub fn create_dir_str(
+        ctx: NativeCallContext,
+        path_raw: ImmutableString,
+    ) -> Result<(), Box<EvalAltResult>> {
+        let path = ctx.call_fn::<PathBuf>("path", (path_raw,))?;
+        create_dir(path)
+    }
+
     /// Removes an empty directory.
     ///
     /// Throws an exception when:
@@ -21,6 +31,16 @@ pub mod dir_functions {
     #[rhai_fn(return_raw)]
     pub fn remove_dir(path: PathBuf) -> Result<(), Box<EvalAltResult>> {
         std::fs::remove_dir(path).map_err(|e| e.to_string().into())
+    }
+
+    /// Helper function for `remove_dir` that takes a string instead of [PathBuf].
+    #[rhai_fn(return_raw, name = "remove_dir")]
+    pub fn remove_dir_str(
+        ctx: NativeCallContext,
+        path_raw: ImmutableString,
+    ) -> Result<(), Box<EvalAltResult>> {
+        let path = ctx.call_fn::<PathBuf>("path", (path_raw,))?;
+        remove_dir(path)
     }
 
     /// Returns an array of paths in the directory.
@@ -38,5 +58,15 @@ pub mod dir_functions {
                 .collect()),
             Err(e) => Err(format!("{}", &e).into()),
         }
+    }
+
+    /// Helper function for `open_dir` that takes a string instead of [PathBuf].
+    #[rhai_fn(return_raw, name = "open_dir")]
+    pub fn open_dir_str(
+        ctx: NativeCallContext,
+        path_raw: ImmutableString,
+    ) -> Result<rhai::Array, Box<EvalAltResult>> {
+        let path = ctx.call_fn::<PathBuf>("path", (path_raw,))?;
+        open_dir(path)
     }
 }
