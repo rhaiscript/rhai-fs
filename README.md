@@ -50,8 +50,9 @@ fn main() -> Result<(), Box<EvalAltResult>> {
 
 ## Features
 
-|  Feature   | Default  | Description                                     |
-| :--------: | :------: | ----------------------------------------------- |
-| `no_index` | disabled | Enables support for `no_index` builds of [Rhai] |
+|  Feature   | Default  | Description                                          |
+| :--------: | :------: | ---------------------------------------------------- |
+| `no_index` | disabled | Enables support for `no_index` builds of [Rhai]      |
+| `metadata` | disabled | Enables support for generating package documentation |
 
 [Rhai]: https://rhai.rs
