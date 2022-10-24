@@ -10,13 +10,13 @@ fn main() -> Result<(), Box<EvalAltResult>> {
 
     // Register our filesystem package.
     let package = FilesystemPackage::new();
-    package.register_into_engine(&mut engine);
+    package.register_into_engine_as(&mut engine, "fs");
 
     std::env::set_current_dir(Path::new(env!("CARGO_MANIFEST_DIR")).join("examples")).unwrap();
 
     engine.run(
         r#"
-    let file = open_file(path("hello.txt")); 
+    let file = fs::open_file(fs::path("hello.txt")); 
     print(file.read_string())"#,
     )?;
 
