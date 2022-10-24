@@ -15,7 +15,7 @@ This crate provides filesystem access for the [Rhai] scripting language.
 
 ```toml
 [dependencies]
-rhai-fs = "0.0.1"
+rhai-fs = "0.1.0"
 ```
 
 ### [Rhai] script
