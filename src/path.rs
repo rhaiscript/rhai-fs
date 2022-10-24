@@ -6,6 +6,7 @@ pub mod path_functions {
     use std::path::{Path, PathBuf};
 
     /// Creates a path from the passed string.
+    #[rhai_fn(global)]
     pub fn path(path: &str) -> PathBuf {
         PathBuf::from(path.to_string())
     }
