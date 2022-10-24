@@ -2,6 +2,11 @@
 
 # About `rhai-fs`
 
+[![License](https://img.shields.io/crates/l/rhai-fs)](https://github.com/license/rhaiscript/rhai-fs)
+[![crates.io](https://img.shields.io/crates/v/rhai-fs?logo=rust)](https://crates.io/crates/rhai-fs/)
+[![crates.io](https://img.shields.io/crates/d/rhai-fs?logo=rust)](https://crates.io/crates/rhai-fs/)
+[![API Docs](https://docs.rs/rhai-fs/badge.svg?logo=docs-rs)](https://docs.rs/rhai-fs/)
+
 This crate provides filesystem access for the [Rhai] scripting language.
 
 ## Usage
@@ -10,7 +15,7 @@ This crate provides filesystem access for the [Rhai] scripting language.
 
 ```toml
 [dependencies]
-rhai-fs = "0.1"
+rhai-fs = "0.0.1"
 ```
 
 ### [Rhai] script
