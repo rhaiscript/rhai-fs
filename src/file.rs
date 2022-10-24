@@ -242,13 +242,25 @@ pub mod file_functions {
             }
         }
 
-        /// Writes the blob into the file at the current stream position.
-        #[rhai_fn(pure, return_raw, name = "write")]
-        pub fn write_with_blob(
-            file: &mut SharedFile,
-            blob: Blob,
+        /// Reads from the current stream position into the provided `Blob` with the read length being returned.
+        #[rhai_fn(return_raw)]
+        pub fn read_from_file(
+            blob: &mut Blob,
+            file: SharedFile,
         ) -> Result<rhai::INT, Box<EvalAltResult>> {
-            match file.borrow_mut().write(&blob) {
+            match file.borrow_mut().read(blob) {
+                Ok(len) => convert_to_int(len),
+                Err(e) => Err(format!("{}", &e).into()),
+            }
+        }
+
+        /// Writes the blob into the file at the current stream position.
+        #[rhai_fn(pure, return_raw)]
+        pub fn write_to_file(
+            blob: &mut Blob,
+            file: SharedFile,
+        ) -> Result<rhai::INT, Box<EvalAltResult>> {
+            match file.borrow_mut().write(blob) {
                 Ok(len) => convert_to_int(len),
                 Err(e) => Err(format!("{}", &e).into()),
             }

@@ -127,5 +127,14 @@ fn test_blob_file() -> Result<(), Box<EvalAltResult>> {
         16
     );
 
+    // Blob from rhai to rust.
+    assert_eq!(
+        engine.eval_with_scope::<rhai::Blob>(
+            &mut scope,
+            r#"FILE.seek(0); let x = blob(9); x.read_from_file(FILE); x"#
+        )?,
+        &[1, 2, 3, 4, 5, 6, 7, 8, 9]
+    );
+
     Ok(())
 }
