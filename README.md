@@ -22,7 +22,7 @@ rhai-fs = "0.0.1"
 
 ```js
 // Create a file or open and truncate it already created
-let file = open_file(path("example.txt"));
+let file = open_file("example.txt");
 let blob_buf = file.read_blob();
 print("file contents: " + blob_buf);
 blob_buf.write_utf8(0..=0x20, "foobar");
@@ -46,7 +46,7 @@ fn main() -> Result<(), Box<EvalAltResult>> {
     package.register_into_engine(&mut engine);
 
     // Print the contents of the file `Cargo.toml`.
-    let contents = engine.eval::<String>(r#"open_file(path("Cargo.toml"), "r").read_string()"#)?;
+    let contents = engine.eval::<String>(r#"open_file("Cargo.toml", "r").read_string()"#)?;
     println!("{}", contents);
 
     Ok(())

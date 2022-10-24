@@ -16,7 +16,7 @@ fn main() -> Result<(), Box<EvalAltResult>> {
 
     engine.run(
         r#"
-    let file = fs::open_file(fs::path("hello.txt")); 
+    let file = fs::open_file("hello.txt"); 
     print(file.read_string())"#,
     )?;
 
