@@ -106,7 +106,7 @@ pub mod file_functions {
     ///
     /// Throws an exception when:
     /// - The read function encounters an I/O error.
-    #[rhai_fn(pure, return_raw, name = "read_string")]
+    #[rhai_fn(global, pure, return_raw, name = "read_string")]
     pub fn read_to_string(
         ctx: NativeCallContext,
         file: &mut SharedFile,
@@ -118,7 +118,7 @@ pub mod file_functions {
     ///
     /// Throws an exception when:
     /// - The read function encounters an I/O error.
-    #[rhai_fn(pure, return_raw, name = "read_string")]
+    #[rhai_fn(global, pure, return_raw, name = "read_string")]
     pub fn read_to_string_with_len(
         ctx: NativeCallContext,
         file: &mut SharedFile,
@@ -156,7 +156,7 @@ pub mod file_functions {
     ///
     /// Throws an exception when:
     /// - The write function encounters an I/O error.
-    #[rhai_fn(pure, return_raw, name = "write")]
+    #[rhai_fn(global, pure, return_raw, name = "write")]
     pub fn write_with_string(
         file: &mut SharedFile,
         str: &str,
@@ -171,7 +171,7 @@ pub mod file_functions {
     ///
     /// Throws an exception when:
     /// - Seeking to a negative position.
-    #[rhai_fn(pure, return_raw)]
+    #[rhai_fn(global, pure, return_raw)]
     pub fn seek(file: &mut SharedFile, pos: rhai::INT) -> Result<rhai::INT, Box<EvalAltResult>> {
         match file.borrow_mut().seek(std::io::SeekFrom::Start(pos as u64)) {
             Ok(new_pos) => convert_to_int(new_pos),
@@ -180,7 +180,7 @@ pub mod file_functions {
     }
 
     /// Returns the current stream position.
-    #[rhai_fn(pure, return_raw)]
+    #[rhai_fn(global, pure, return_raw)]
     pub fn position(file: &mut SharedFile) -> Result<rhai::INT, Box<EvalAltResult>> {
         match file.borrow_mut().stream_position() {
             Ok(pos) => convert_to_int(pos),
@@ -189,7 +189,7 @@ pub mod file_functions {
     }
 
     /// Returns the size of the file, in bytes.
-    #[rhai_fn(pure, return_raw)]
+    #[rhai_fn(global, pure, return_raw)]
     pub fn bytes(file: &mut SharedFile) -> Result<rhai::INT, Box<EvalAltResult>> {
         match file.borrow().metadata() {
             Ok(md) => convert_to_int(md.len()),
@@ -202,7 +202,7 @@ pub mod file_functions {
         use rhai::Blob;
 
         /// Reads from the current stream position until EOF and returns it as a `Blob`, respects the engine's `max_array_size`.
-        #[rhai_fn(pure, return_raw, name = "read_blob")]
+        #[rhai_fn(global, pure, return_raw, name = "read_blob")]
         pub fn read_to_blob(
             ctx: NativeCallContext,
             file: &mut SharedFile,
@@ -211,7 +211,7 @@ pub mod file_functions {
         }
 
         /// Reads from the current stream position up to the passed `len` and returns it as a `Blob`, respects the engine's `max_array_size`.
-        #[rhai_fn(pure, return_raw, name = "read_blob")]
+        #[rhai_fn(global, pure, return_raw, name = "read_blob")]
         pub fn read_to_blob_with_len(
             ctx: NativeCallContext,
             file: &mut SharedFile,
@@ -243,7 +243,7 @@ pub mod file_functions {
         }
 
         /// Reads from the current stream position into the provided `Blob` with the read length being returned.
-        #[rhai_fn(return_raw)]
+        #[rhai_fn(global, return_raw)]
         pub fn read_from_file(
             blob: &mut Blob,
             file: SharedFile,
@@ -255,7 +255,7 @@ pub mod file_functions {
         }
 
         /// Writes the blob into the file at the current stream position.
-        #[rhai_fn(pure, return_raw)]
+        #[rhai_fn(global, pure, return_raw)]
         pub fn write_to_file(
             blob: &mut Blob,
             file: SharedFile,
