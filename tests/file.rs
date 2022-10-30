@@ -136,5 +136,14 @@ fn test_blob_file() -> Result<(), Box<EvalAltResult>> {
         &[1, 2, 3, 4, 5, 6, 7, 8, 9]
     );
 
+    // Blob write to file.
+    assert_eq!(
+        engine.eval_with_scope::<rhai::INT>(
+            &mut scope,
+            r#"FILE.seek(0); let x = blob(8); x.write_utf8(0..8, "test"); x.write_to_file(FILE)"#
+        )?,
+        8
+    );
+
     Ok(())
 }
