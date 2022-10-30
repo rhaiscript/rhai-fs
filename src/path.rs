@@ -11,6 +11,16 @@ pub mod path_functions {
         PathBuf::from(path.to_string())
     }
 
+    /// Returns path to current working directory.
+    ///
+    /// Throws an exception when:
+    /// - The current working directory does not exist.
+    /// - The process lacks the permissions to access the current working directory.
+    #[rhai_fn(return_raw)]
+    pub fn cwd() -> Result<std::path::PathBuf, Box<EvalAltResult>> {
+        std::env::current_dir().map_err(|e| e.to_string().into())
+    }
+
     /// Returns `true` if path points to something in the filesystem (a file or directory) so long as the current process can access it.
     #[rhai_fn(global, pure, get = "exists")]
     pub fn exists(path: &mut PathBuf) -> bool {

@@ -16,8 +16,8 @@ fn test_dir() -> Result<(), Box<EvalAltResult>> {
 
     // Retrieve first path from dir.
     assert_eq!(
-        engine.eval::<PathBuf>(r#"open_dir(path(""))[0]"#)?,
-        PathBuf::from("bar")
+        engine.eval::<PathBuf>(r#"open_dir(cwd())[0]"#)?,
+        std::env::current_dir().unwrap().join("bar")
     );
 
     Ok(())
