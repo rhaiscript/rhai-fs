@@ -1,5 +1,3 @@
-### ⚠️ **Master branch is unstable, use at your own risk**
-
 # About `rhai-fs`
 
 [![License](https://img.shields.io/crates/l/rhai-fs)](https://github.com/license/rhaiscript/rhai-fs)
