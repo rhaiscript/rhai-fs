@@ -15,7 +15,7 @@ fn test_reading_file() -> Result<(), Box<EvalAltResult>> {
 
     // Read a known good file.
     let shared_file = Rc::new(RefCell::new(tempfile::tempfile().unwrap()));
-    shared_file.borrow_mut().write(b"This is a test!").unwrap();
+    let _ = shared_file.borrow_mut().write(b"This is a test!").unwrap();
     shared_file.borrow_mut().seek(SeekFrom::Start(0)).unwrap();
     let mut scope = Scope::new();
     scope.push_constant("FILE", shared_file);
@@ -75,7 +75,7 @@ fn test_seeking_file() -> Result<(), Box<EvalAltResult>> {
 
     // Seek off the start of a known good file.
     let shared_file = Rc::new(RefCell::new(tempfile::tempfile().unwrap()));
-    shared_file.borrow_mut().write(b"0This is a test!").unwrap();
+    let _ = shared_file.borrow_mut().write(b"0This is a test!").unwrap();
     let mut scope = Scope::new();
     scope.push_constant("FILE", shared_file);
 
@@ -98,7 +98,7 @@ fn test_blob_file() -> Result<(), Box<EvalAltResult>> {
 
     // Read a known good file.
     let shared_file = Rc::new(RefCell::new(tempfile::tempfile().unwrap()));
-    shared_file
+    let _ = shared_file
         .borrow_mut()
         .write(&[1, 2, 3, 4, 5, 6, 7, 8, 9])
         .unwrap();
