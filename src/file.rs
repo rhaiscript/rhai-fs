@@ -28,7 +28,7 @@ pub mod file_functions {
         ctx: NativeCallContext,
         path_raw: ImmutableString,
     ) -> Result<SharedFile, Box<EvalAltResult>> {
-        let path = ctx.call_fn::<PathBuf>("path", (path_raw,))?;
+        let path = ctx.call_native_fn::<PathBuf>("path", (path_raw,))?;
         open_file(path)
     }
 
@@ -77,7 +77,7 @@ pub mod file_functions {
         path_raw: ImmutableString,
         options: &str,
     ) -> Result<SharedFile, Box<EvalAltResult>> {
-        let path = ctx.call_fn::<PathBuf>("path", (path_raw,))?;
+        let path = ctx.call_native_fn::<PathBuf>("path", (path_raw,))?;
         open_file_with_opts(path, options)
     }
 
@@ -98,7 +98,7 @@ pub mod file_functions {
         ctx: NativeCallContext,
         path_raw: ImmutableString,
     ) -> Result<(), Box<EvalAltResult>> {
-        let path = ctx.call_fn::<PathBuf>("path", (path_raw,))?;
+        let path = ctx.call_native_fn::<PathBuf>("path", (path_raw,))?;
         std::fs::remove_file(path).map_err(|e| e.to_string().into())
     }
 
