@@ -14,11 +14,8 @@ fn test_dir() -> Result<(), Box<EvalAltResult>> {
     std::env::set_current_dir(Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/fixtures"))
         .unwrap();
 
-    // Retrieve first path from dir.
-    assert_eq!(
-        engine.eval::<PathBuf>(r#"open_dir(cwd())[0]"#)?,
-        std::env::current_dir().unwrap().join("bar")
-    );
+    // Retrieve number of paths from dir.
+    assert_eq!(engine.eval::<rhai::INT>(r#"open_dir(cwd()).len"#)?, 2);
 
     Ok(())
 }
