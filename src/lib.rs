@@ -2,6 +2,11 @@
 #![warn(clippy::missing_docs_in_private_items)]
 #![deny(rustdoc::broken_intra_doc_links)]
 #![doc = include_str!("../README.md")]
+//!
+//! ## API
+//!
+//! The following functions are defined in this package:
+//!
 #![doc = include_str!(concat!(env!("OUT_DIR"), "/rhai-fs-docs.md"))]
 #![doc = include_str!("../docs/highlight.html")]
 
