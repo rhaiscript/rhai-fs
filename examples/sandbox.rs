@@ -39,5 +39,5 @@ fn sandboxed_path(str_path: &str) -> Result<PathBuf, Box<EvalAltResult>> {
         Ok(p) => p.starts_with(root_path).then(|| path),
         Err(e) => return Err(e.to_string().into()),
     }
-    .ok_or("Path out of bounds".into())
+    .ok_or_else(|| "Path out of bounds".into())
 }

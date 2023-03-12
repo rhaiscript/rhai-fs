@@ -17,7 +17,7 @@ pub mod dir_functions {
         ctx: NativeCallContext,
         path_raw: ImmutableString,
     ) -> Result<(), Box<EvalAltResult>> {
-        let path = ctx.call_fn::<PathBuf>("path", (path_raw,))?;
+        let path = ctx.call_native_fn::<PathBuf>("path", (path_raw,))?;
         create_dir(path)
     }
 
@@ -39,7 +39,7 @@ pub mod dir_functions {
         ctx: NativeCallContext,
         path_raw: ImmutableString,
     ) -> Result<(), Box<EvalAltResult>> {
-        let path = ctx.call_fn::<PathBuf>("path", (path_raw,))?;
+        let path = ctx.call_native_fn::<PathBuf>("path", (path_raw,))?;
         remove_dir(path)
     }
 
@@ -66,7 +66,7 @@ pub mod dir_functions {
         ctx: NativeCallContext,
         path_raw: ImmutableString,
     ) -> Result<rhai::Array, Box<EvalAltResult>> {
-        let path = ctx.call_fn::<PathBuf>("path", (path_raw,))?;
+        let path = ctx.call_native_fn::<PathBuf>("path", (path_raw,))?;
         open_dir(path)
     }
 }
