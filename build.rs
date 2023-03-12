@@ -50,10 +50,9 @@ mod doc_gen {
     impl DocFunc {
         pub fn fmt_signature(&self) -> String {
             self.signature
-                .replace("Result<", "")
+                .replace(" -> Result<", " -> ")
                 .replace(", Box<EvalAltResult>>", "")
                 .replace("&mut ", "")
-                .replace("get$", "")
         }
 
         pub fn fmt_doc_comments(&self) -> Option<String> {
@@ -91,6 +90,33 @@ mod doc_gen {
         // }
     }
 
+    fn fmt_fn_name(mut name: &str, mut signature: String) -> (&str, &str, String) {
+        let mut prefix = "";
+
+        if name.starts_with("get$") {
+            signature.drain(0..4);
+            name = &name[4..];
+            prefix = "property get ";
+        }
+        if name.starts_with("set$") {
+            signature.drain(0..4);
+            name = &name[4..];
+            prefix = "property set ";
+        }
+        if name == "index$get" {
+            signature.drain(0..6);
+            name = "get";
+            prefix = "indexer ";
+        }
+        if name == "index$set" {
+            signature.drain(0..6);
+            name = "set";
+            prefix = "indexer ";
+        }
+
+        (prefix, name, signature)
+    }
+
     pub fn generate_doc(writer: &mut impl Write) {
         let mut engine = Engine::new();
         let mut fs_module = Module::new();
@@ -113,24 +139,27 @@ mod doc_gen {
         for (idx, function) in function_list.iter().enumerate() {
             // Pull out basic info
             let name: &str = &function.name;
-            if !name.starts_with("anon") {
+            if !name.starts_with("anon$") {
                 let signature = function.fmt_signature();
                 let comments = function.fmt_doc_comments().unwrap_or_default();
+
+                let (prefix, name, signature) = fmt_fn_name(name, signature);
 
                 // Check if there are multiple arities, and if so add a header and indent
                 if idx < function_list.len() - 1 {
                     if name == function_list[idx + 1].name && !indented {
-                        writeln!(writer, "## `{name}`").expect("Cannot write to {doc_file}");
+                        writeln!(writer, "## {prefix}`{}`", name.to_owned())
+                            .expect("Cannot write to {doc_file}");
                         indented = true;
                     }
                 }
 
                 // Print definition with right level of indentation
                 if indented {
-                    writeln!(writer, "### `{signature}`\n\n{comments}")
+                    writeln!(writer, "### {prefix}`{signature}`\n\n{comments}")
                         .expect("Cannot write to {doc_file}");
                 } else {
-                    writeln!(writer, "## `{signature}`\n{comments}")
+                    writeln!(writer, "## {prefix}`{signature}`\n{comments}")
                         .expect("Cannot write to {doc_file}");
                 }
 
