@@ -19,7 +19,7 @@ rhai-fs = "0.1.2"
 ### [Rhai] script
 
 ```js
-// Create a file or open and truncate it already created
+// Create a file or open and truncate if file is already created
 let file = open_file("example.txt");
 let blob_buf = file.read_blob();
 print("file contents: " + blob_buf);
