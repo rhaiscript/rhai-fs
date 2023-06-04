@@ -11,7 +11,7 @@ pub mod dir_functions {
         std::fs::create_dir_all(path).map_err(|e| e.to_string().into())
     }
 
-    /// Helper function for `create_dir` that takes a string instead of [PathBuf].
+    /// Helper function for `create_dir` that takes a string instead of `PathBuf`.
     #[rhai_fn(return_raw, name = "create_dir")]
     pub fn create_dir_str(
         ctx: NativeCallContext,
@@ -33,7 +33,7 @@ pub mod dir_functions {
         std::fs::remove_dir(path).map_err(|e| e.to_string().into())
     }
 
-    /// Helper function for `remove_dir` that takes a string instead of [PathBuf].
+    /// Helper function for `remove_dir` that takes a string instead of `PathBuf`.
     #[rhai_fn(return_raw, name = "remove_dir")]
     pub fn remove_dir_str(
         ctx: NativeCallContext,
@@ -60,7 +60,7 @@ pub mod dir_functions {
         }
     }
 
-    /// Helper function for `open_dir` that takes a string instead of [PathBuf].
+    /// Helper function for `open_dir` that takes a string instead of `PathBuf`.
     #[rhai_fn(return_raw, name = "open_dir")]
     pub fn open_dir_str(
         ctx: NativeCallContext,

@@ -13,9 +13,7 @@ fn main() {
     let mut doc_file = File::create(doc_file_path).expect("create doc file");
 
     #[cfg(feature = "metadata")]
-    {
-        doc_gen::generate_doc(&mut doc_file);
-    }
+    doc_gen::generate_doc(&mut doc_file);
 }
 
 #[cfg(feature = "metadata")]
@@ -53,6 +51,8 @@ mod doc_gen {
                 .replace(" -> Result<", " -> ")
                 .replace(", Box<EvalAltResult>>", "")
                 .replace("&mut ", "")
+                .replace(" -> ()", "")
+                .replace("ImmutableString", "String")
         }
 
         pub fn fmt_doc_comments(&self) -> Option<String> {
@@ -127,11 +127,7 @@ mod doc_gen {
 
         // Extract metadata
         let json_fns = engine.gen_fn_metadata_to_json(false).unwrap();
-        println!("{json_fns}");
         let v: HashMap<String, Vec<DocFunc>> = serde_json::from_str(&json_fns).unwrap();
-        for function in v["functions"].clone() {
-            println!("{:?}", function);
-        }
         let function_list = v["functions"].clone();
 
         // Write functions

@@ -17,7 +17,7 @@ pub mod path_functions {
     /// - The current working directory does not exist.
     /// - The process lacks the permissions to access the current working directory.
     #[rhai_fn(return_raw)]
-    pub fn cwd() -> Result<std::path::PathBuf, Box<EvalAltResult>> {
+    pub fn cwd() -> Result<PathBuf, Box<EvalAltResult>> {
         std::env::current_dir().map_err(|e| e.to_string().into())
     }
 
@@ -69,8 +69,8 @@ pub mod path_functions {
     }
 
     #[rhai_fn(global, name = "+", pure)]
-    pub fn add_string(path: &mut PathBuf, str: ImmutableString) -> PathBuf {
-        path.join(Path::new(str.as_str()))
+    pub fn add_string(path: &mut PathBuf, str: &str) -> PathBuf {
+        path.join(Path::new(str))
     }
 
     #[rhai_fn(global, name = "+=", name = "append", name = "push")]

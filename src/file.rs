@@ -22,7 +22,7 @@ pub mod file_functions {
         open_file_with_opts(path, "w+")
     }
 
-    /// Helper function for `open_file(path)` that takes a string instead of [PathBuf].
+    /// Helper function for `open_file(path)` that takes a string instead of `PathBuf`.
     #[rhai_fn(return_raw, name = "open_file")]
     pub fn open_file_str(
         ctx: NativeCallContext,
@@ -70,7 +70,7 @@ pub mod file_functions {
         }
     }
 
-    /// Helper function for `open_file(path, options)` that takes a string instead of [PathBuf].
+    /// Helper function for `open_file(path, options)` that takes a string instead of `PathBuf`.
     #[rhai_fn(return_raw, name = "open_file")]
     pub fn open_file_with_opts_str(
         ctx: NativeCallContext,
@@ -92,7 +92,7 @@ pub mod file_functions {
         std::fs::remove_file(path).map_err(|e| e.to_string().into())
     }
 
-    /// Helper function for `remove_file` that takes a string instead of [PathBuf].
+    /// Helper function for `remove_file` that takes a string instead of `PathBuf`.
     #[rhai_fn(return_raw)]
     pub fn remove_file_str(
         ctx: NativeCallContext,
