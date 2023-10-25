@@ -132,7 +132,6 @@ mod doc_gen {
 
         // Extract metadata
         let json_fns = engine.gen_fn_metadata_to_json(false).unwrap();
-        println!("{json_fns}");
         let v: Metadata = serde_json::from_str(&json_fns).unwrap();
         let function_list = v.functions.as_ref().map_or(&[][..], Vec::as_slice);
 
