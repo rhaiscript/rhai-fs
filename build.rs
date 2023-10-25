@@ -31,6 +31,11 @@ mod doc_gen {
     }
 
     #[derive(Serialize, Deserialize, Debug, Clone)]
+    struct Metadata {
+        pub functions: Option<Vec<DocFunc>>,
+    }
+
+    #[derive(Serialize, Deserialize, Debug, Clone)]
     #[allow(non_snake_case)]
     struct DocFunc {
         pub access: String,
@@ -120,15 +125,16 @@ mod doc_gen {
     pub fn generate_doc(writer: &mut impl Write) {
         let mut engine = Engine::new();
         let mut fs_module = Module::new();
-        combine_with_exported_module!(&mut fs_module, "rhai_fs_path", pkg::path_functions);
+        //combine_with_exported_module!(&mut fs_module, "rhai_fs_path", pkg::path_functions);
         combine_with_exported_module!(&mut fs_module, "rhai_file_path", pkg::file_functions);
-        combine_with_exported_module!(&mut fs_module, "rhai_dir_path", pkg::dir_functions);
+        //combine_with_exported_module!(&mut fs_module, "rhai_dir_path", pkg::dir_functions);
         engine.register_global_module(fs_module.into());
 
         // Extract metadata
         let json_fns = engine.gen_fn_metadata_to_json(false).unwrap();
-        let v: HashMap<String, Vec<DocFunc>> = serde_json::from_str(&json_fns).unwrap();
-        let function_list = v["functions"].clone();
+        println!("{json_fns}");
+        let v: Metadata = serde_json::from_str(&json_fns).unwrap();
+        let function_list = v.functions.as_ref().map_or(&[][..], Vec::as_slice);
 
         // Write functions
         let mut indented = false;

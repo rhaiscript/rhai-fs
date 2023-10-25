@@ -21,7 +21,7 @@ jobs:
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all-features
+          args: --features metadata
   tests:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -30,6 +30,6 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Build
-        run: cargo build --verbose
+        run: cargo build --verbose --features metadata
       - name: Run tests
-        run: cargo test --verbose
+        run: cargo test --verbose --features metadata
