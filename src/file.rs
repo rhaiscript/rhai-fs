@@ -1,20 +1,29 @@
 #[allow(unused_imports)]
 use rhai::plugin::*;
+use rhai::{Locked, Shared};
+
+use std::fs::{File, OpenOptions};
+use std::io::prelude::*;
+use std::ops::DerefMut;
+use std::path::PathBuf;
 
 fn convert_to_int(val: impl TryInto<rhai::INT>) -> Result<rhai::INT, Box<EvalAltResult>> {
     val.try_into()
         .map_err(|_| "Error converting number {new_pos} to rhai number type".into())
 }
 
+#[inline(always)]
+fn borrow_mut(file: &Shared<Locked<File>>) -> impl DerefMut<Target = File> + '_ {
+    #[cfg(not(feature = "sync"))]
+    return file.borrow_mut();
+
+    #[cfg(feature = "sync")]
+    return file.write().unwrap();
+}
+
 #[export_module]
 pub mod file_functions {
-    use std::cell::RefCell;
-    use std::fs::{File, OpenOptions};
-    use std::io::prelude::*;
-    use std::path::PathBuf;
-    use std::rc::Rc;
-
-    pub type SharedFile = Rc<RefCell<File>>;
+    pub type SharedFile = Shared<Locked<File>>;
 
     /// Creates or opens a file for reading and writing.
     #[rhai_fn(return_raw)]
@@ -65,7 +74,7 @@ pub mod file_functions {
             _ => &mut opts,
         };
         match final_opts.open(path) {
-            Ok(file) => Ok(Rc::new(RefCell::new(file))),
+            Ok(file) => Ok(Shared::new(Locked::new(file))),
             Err(e) => Err(format!("{}", &e).into()),
         }
     }
@@ -128,18 +137,18 @@ pub mod file_functions {
 
         let max_len = ctx.engine().max_string_size();
         let res = match max_len {
-            0 if len == 0 => file.borrow_mut().read_to_end(&mut buf),
+            0 if len == 0 => borrow_mut(file).read_to_end(&mut buf),
             0 if len > 0 => {
                 buf.resize(len as usize, 0);
-                file.borrow_mut().read(&mut buf)
+                borrow_mut(file).read(&mut buf)
             }
             _ if len == 0 => {
                 buf.resize(max_len, 0);
-                file.borrow_mut().read(&mut buf)
+                borrow_mut(file).read(&mut buf)
             }
             _ => {
                 buf.resize(max_len.min(len as usize), 0);
-                file.borrow_mut().read(&mut buf)
+                borrow_mut(file).read(&mut buf)
             }
         };
 
@@ -161,7 +170,7 @@ pub mod file_functions {
         file: &mut SharedFile,
         str: &str,
     ) -> Result<rhai::INT, Box<EvalAltResult>> {
-        match file.borrow_mut().write(str.as_bytes()) {
+        match borrow_mut(file).write(str.as_bytes()) {
             Ok(len) => convert_to_int(len),
             Err(e) => Err(format!("{}", &e).into()),
         }
@@ -173,7 +182,7 @@ pub mod file_functions {
     /// - Seeking to a negative position.
     #[rhai_fn(global, pure, return_raw)]
     pub fn seek(file: &mut SharedFile, pos: rhai::INT) -> Result<rhai::INT, Box<EvalAltResult>> {
-        match file.borrow_mut().seek(std::io::SeekFrom::Start(pos as u64)) {
+        match borrow_mut(file).seek(std::io::SeekFrom::Start(pos as u64)) {
             Ok(new_pos) => convert_to_int(new_pos),
             Err(e) => Err(format!("{}", &e).into()),
         }
@@ -182,7 +191,7 @@ pub mod file_functions {
     /// Returns the current stream position.
     #[rhai_fn(global, pure, return_raw)]
     pub fn position(file: &mut SharedFile) -> Result<rhai::INT, Box<EvalAltResult>> {
-        match file.borrow_mut().stream_position() {
+        match borrow_mut(file).stream_position() {
             Ok(pos) => convert_to_int(pos),
             Err(e) => Err(format!("{}", &e).into()),
         }
@@ -191,7 +200,7 @@ pub mod file_functions {
     /// Returns the size of the file, in bytes.
     #[rhai_fn(global, pure, return_raw)]
     pub fn bytes(file: &mut SharedFile) -> Result<rhai::INT, Box<EvalAltResult>> {
-        match file.borrow().metadata() {
+        match borrow_mut(file).metadata() {
             Ok(md) => convert_to_int(md.len()),
             Err(e) => Err(format!("{}", &e).into()),
         }
@@ -221,18 +230,18 @@ pub mod file_functions {
 
             let max_len = ctx.engine().max_array_size();
             let res = match max_len {
-                0 if len == 0 => file.borrow_mut().read_to_end(&mut buf),
+                0 if len == 0 => borrow_mut(file).read_to_end(&mut buf),
                 0 if len > 0 => {
                     buf.resize(len as usize, 0);
-                    file.borrow_mut().read(&mut buf)
+                    borrow_mut(file).read(&mut buf)
                 }
                 _ if len == 0 => {
                     buf.resize(max_len, 0);
-                    file.borrow_mut().read(&mut buf)
+                    borrow_mut(file).read(&mut buf)
                 }
                 _ => {
                     buf.resize(max_len.min(len as usize), 0);
-                    file.borrow_mut().read(&mut buf)
+                    borrow_mut(file).read(&mut buf)
                 }
             };
 
@@ -246,9 +255,9 @@ pub mod file_functions {
         #[rhai_fn(global, return_raw)]
         pub fn read_from_file(
             blob: &mut Blob,
-            file: SharedFile,
+            mut file: SharedFile,
         ) -> Result<rhai::INT, Box<EvalAltResult>> {
-            match file.borrow_mut().read(blob) {
+            match borrow_mut(&mut file).read(blob) {
                 Ok(len) => convert_to_int(len),
                 Err(e) => Err(format!("{}", &e).into()),
             }
@@ -258,9 +267,9 @@ pub mod file_functions {
         #[rhai_fn(global, pure, return_raw)]
         pub fn write_to_file(
             blob: &mut Blob,
-            file: SharedFile,
+            mut file: SharedFile,
         ) -> Result<rhai::INT, Box<EvalAltResult>> {
-            match file.borrow_mut().write(blob) {
+            match borrow_mut(&mut file).write(blob) {
                 Ok(len) => convert_to_int(len),
                 Err(e) => Err(format!("{}", &e).into()),
             }

@@ -56,6 +56,7 @@ fn main() -> Result<(), Box<EvalAltResult>> {
 |  Feature   | Default  | Description                                          |
 | :--------: | :------: | ---------------------------------------------------- |
 | `no_index` | disabled | Enables support for `no_index` builds of [Rhai]      |
+|   `sync`   | disabled | Enables support for `sync` builds of [Rhai]          |
 | `metadata` | disabled | Enables support for generating package documentation |
 
 [Rhai]: https://rhai.rs

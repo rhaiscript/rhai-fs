@@ -13,7 +13,8 @@ categories = ["embedded"]
 [features]
 default = []
 metadata = ["rhai/metadata"] # doc generation
-no_index = []                # support `no_index` builds of rhai
+sync = ["rhai/sync"]         # support `sync` builds of Rhai
+no_index = []                # support `no_index` builds of Rhai
 
 [dependencies]
 rhai = { version = ">=1.9" }

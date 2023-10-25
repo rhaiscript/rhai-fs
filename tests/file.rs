@@ -1,9 +1,19 @@
+use std::fs::File;
 use std::io::prelude::*;
-use std::rc::Rc;
-use std::{cell::RefCell, io::SeekFrom};
+use std::io::SeekFrom;
+use std::ops::DerefMut;
 
-use rhai::{packages::Package, Engine, EvalAltResult, Scope};
+use rhai::{packages::Package, Engine, EvalAltResult, Locked, Scope, Shared};
 use rhai_fs::FilesystemPackage;
+
+#[inline(always)]
+fn borrow_mut(file: &Shared<Locked<File>>) -> impl DerefMut<Target = File> + '_ {
+    #[cfg(not(feature = "sync"))]
+    return file.borrow_mut();
+
+    #[cfg(feature = "sync")]
+    return file.write().unwrap();
+}
 
 #[test]
 fn test_reading_file() -> Result<(), Box<EvalAltResult>> {
@@ -14,10 +24,11 @@ fn test_reading_file() -> Result<(), Box<EvalAltResult>> {
     package.register_into_engine(&mut engine);
 
     // Read a known good file.
-    let shared_file = Rc::new(RefCell::new(tempfile::tempfile().unwrap()));
-    let _ = shared_file.borrow_mut().write(b"This is a test!").unwrap();
-    shared_file.borrow_mut().seek(SeekFrom::Start(0)).unwrap();
     let mut scope = Scope::new();
+
+    let shared_file = Shared::new(Locked::new(tempfile::tempfile().unwrap()));
+    let _ = borrow_mut(&shared_file).write(b"This is a test!").unwrap();
+    borrow_mut(&shared_file).seek(SeekFrom::Start(0)).unwrap();
     scope.push_constant("FILE", shared_file);
 
     assert_eq!(
@@ -53,7 +64,7 @@ fn test_writing_file() -> Result<(), Box<EvalAltResult>> {
     package.register_into_engine(&mut engine);
 
     // Write to a known good file.
-    let shared_file = Rc::new(RefCell::new(tempfile::tempfile().unwrap()));
+    let shared_file = Shared::new(Locked::new(tempfile::tempfile().unwrap()));
     let mut scope = Scope::new();
     scope.push_constant("FILE", shared_file);
 
@@ -74,8 +85,8 @@ fn test_seeking_file() -> Result<(), Box<EvalAltResult>> {
     package.register_into_engine(&mut engine);
 
     // Seek off the start of a known good file.
-    let shared_file = Rc::new(RefCell::new(tempfile::tempfile().unwrap()));
-    let _ = shared_file.borrow_mut().write(b"0This is a test!").unwrap();
+    let shared_file = Shared::new(Locked::new(tempfile::tempfile().unwrap()));
+    let _ = borrow_mut(&shared_file).write(b"0This is a test!").unwrap();
     let mut scope = Scope::new();
     scope.push_constant("FILE", shared_file);
 
@@ -97,12 +108,11 @@ fn test_blob_file() -> Result<(), Box<EvalAltResult>> {
     package.register_into_engine(&mut engine);
 
     // Read a known good file.
-    let shared_file = Rc::new(RefCell::new(tempfile::tempfile().unwrap()));
-    let _ = shared_file
-        .borrow_mut()
+    let shared_file = Shared::new(Locked::new(tempfile::tempfile().unwrap()));
+    let _ = borrow_mut(&shared_file)
         .write(&[1, 2, 3, 4, 5, 6, 7, 8, 9])
         .unwrap();
-    shared_file.borrow_mut().seek(SeekFrom::Start(0)).unwrap();
+    borrow_mut(&shared_file).seek(SeekFrom::Start(0)).unwrap();
     let mut scope = Scope::new();
     scope.push_constant("FILE", shared_file);
 
