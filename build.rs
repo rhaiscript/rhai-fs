@@ -125,9 +125,9 @@ mod doc_gen {
     pub fn generate_doc(writer: &mut impl Write) {
         let mut engine = Engine::new();
         let mut fs_module = Module::new();
-        //combine_with_exported_module!(&mut fs_module, "rhai_fs_path", pkg::path_functions);
+        combine_with_exported_module!(&mut fs_module, "rhai_fs_path", pkg::path_functions);
         combine_with_exported_module!(&mut fs_module, "rhai_file_path", pkg::file_functions);
-        //combine_with_exported_module!(&mut fs_module, "rhai_dir_path", pkg::dir_functions);
+        combine_with_exported_module!(&mut fs_module, "rhai_dir_path", pkg::dir_functions);
         engine.register_global_module(fs_module.into());
 
         // Extract metadata
