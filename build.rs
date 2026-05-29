@@ -18,7 +18,7 @@ fn main() {
 
 #[cfg(feature = "metadata")]
 mod doc_gen {
-    use rhai::{plugin::*, Engine};
+    use rhai::{plugin::*, Engine, Module};
     use serde::{Deserialize, Serialize};
     use std::collections::HashMap;
     use std::io::Write;

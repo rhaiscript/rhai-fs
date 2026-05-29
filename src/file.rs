@@ -1,6 +1,6 @@
 #[allow(unused_imports)]
 use rhai::plugin::*;
-use rhai::{Locked, Shared};
+use rhai::{EvalAltResult, ImmutableString, Locked, NativeCallContext, Shared};
 
 use std::fs::{File, OpenOptions};
 use std::io::prelude::*;

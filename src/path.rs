@@ -3,6 +3,7 @@ use rhai::plugin::*;
 #[export_module]
 #[allow(clippy::ptr_arg)]
 pub mod path_functions {
+    use rhai::EvalAltResult;
     use std::path::{Path, PathBuf};
 
     /// Creates a path from the passed string.

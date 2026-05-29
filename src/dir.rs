@@ -3,6 +3,7 @@ use rhai::plugin::*;
 
 #[export_module]
 pub mod dir_functions {
+    use rhai::{Dynamic, EvalAltResult, ImmutableString, NativeCallContext};
     use std::path::PathBuf;
 
     /// Recursively create a directory and all of its parent components if they are missing.
