@@ -2,14 +2,17 @@
 use rhai::plugin::*;
 use rhai::{EvalAltResult, ImmutableString, Locked, NativeCallContext, Shared};
 
+use std::fmt::Display;
 use std::fs::{File, OpenOptions};
 use std::io::prelude::*;
 use std::ops::DerefMut;
 use std::path::PathBuf;
 
-fn convert_to_int(val: impl TryInto<rhai::INT>) -> Result<rhai::INT, Box<EvalAltResult>> {
+fn convert_to_int(
+    val: impl TryInto<rhai::INT> + Copy + Display,
+) -> Result<rhai::INT, Box<EvalAltResult>> {
     val.try_into()
-        .map_err(|_| "Error converting number {new_pos} to rhai number type".into())
+        .map_err(|_| format!("Error converting number {val} to Rhai integer type").into())
 }
 
 #[inline(always)]
@@ -75,7 +78,7 @@ pub mod file_functions {
         };
         match final_opts.open(path) {
             Ok(file) => Ok(Shared::new(Locked::new(file))),
-            Err(e) => Err(format!("{}", &e).into()),
+            Err(e) => Err(e.to_string().into()),
         }
     }
 
@@ -88,6 +91,34 @@ pub mod file_functions {
     ) -> Result<SharedFile, Box<EvalAltResult>> {
         let path = ctx.call_native_fn::<PathBuf>("path", (path_raw,))?;
         open_file_with_opts(path, options)
+    }
+
+    /// Resizes the file to the specified length.
+    ///
+    /// If `len` is less than the current file size, the file will be truncated.
+    /// If `len` is greater than the current file size, the file will be extended and the new portion filled with zeros.
+    #[rhai_fn(global, return_raw)]
+    pub fn set_file_len(
+        file: &mut SharedFile,
+        len: rhai::INT,
+    ) -> Result<rhai::INT, Box<EvalAltResult>> {
+        let new_len = if len <= 0 {
+            0
+        } else {
+            // `u64` should be able to hold `i64` and `i32`
+            u64::try_from(len).expect("converting to `u64` should not fail")
+        };
+
+        match borrow_mut(file).set_len(new_len) {
+            Ok(_) => Ok(len),
+            Err(e) => Err(e.to_string().into()),
+        }
+    }
+
+    /// Truncates the file to zero size.
+    #[rhai_fn(global, return_raw)]
+    pub fn truncate_file(file: &mut SharedFile) -> Result<rhai::INT, Box<EvalAltResult>> {
+        set_file_len(file, 0)
     }
 
     /// Remove a file at the given path.
@@ -139,7 +170,12 @@ pub mod file_functions {
         let res = match max_len {
             0 if len == 0 => borrow_mut(file).read_to_end(&mut buf),
             0 if len > 0 => {
-                buf.resize(len as usize, 0);
+                // Handle 32-bit `usize` with `i64`
+                let len = usize::try_from(len)
+                    .or_else(|_| usize::try_from(rhai::INT::MAX))
+                    .expect("converting to `usize` should not fail");
+
+                buf.resize(len, 0);
                 borrow_mut(file).read(&mut buf)
             }
             _ if len == 0 => {
@@ -147,7 +183,12 @@ pub mod file_functions {
                 borrow_mut(file).read(&mut buf)
             }
             _ => {
-                buf.resize(max_len.min(len as usize), 0);
+                // Handle 32-bit `usize` with `i64`
+                let len = usize::try_from(len)
+                    .or_else(|_| usize::try_from(rhai::INT::MAX))
+                    .expect("converting to `usize` should not fail");
+
+                buf.resize(max_len.min(len), 0);
                 borrow_mut(file).read(&mut buf)
             }
         };
@@ -157,7 +198,7 @@ pub mod file_functions {
                 buf.truncate(read_len);
                 String::from_utf8(buf).map_err(|e| e.to_string().into())
             }
-            Err(e) => Err(format!("{}", &e).into()),
+            Err(e) => Err(e.to_string().into()),
         }
     }
 
@@ -172,7 +213,7 @@ pub mod file_functions {
     ) -> Result<rhai::INT, Box<EvalAltResult>> {
         match borrow_mut(file).write(str.as_bytes()) {
             Ok(len) => convert_to_int(len),
-            Err(e) => Err(format!("{}", &e).into()),
+            Err(e) => Err(e.to_string().into()),
         }
     }
 
@@ -182,9 +223,16 @@ pub mod file_functions {
     /// - Seeking to a negative position.
     #[rhai_fn(global, pure, return_raw)]
     pub fn seek(file: &mut SharedFile, pos: rhai::INT) -> Result<rhai::INT, Box<EvalAltResult>> {
-        match borrow_mut(file).seek(std::io::SeekFrom::Start(pos as u64)) {
+        let pos = if pos <= 0 {
+            0
+        } else {
+            // `u64` should be able to hold `i64` and `i32`
+            u64::try_from(pos).expect("converting to `u64` should not fail")
+        };
+
+        match borrow_mut(file).seek(std::io::SeekFrom::Start(pos)) {
             Ok(new_pos) => convert_to_int(new_pos),
-            Err(e) => Err(format!("{}", &e).into()),
+            Err(e) => Err(e.to_string().into()),
         }
     }
 
@@ -193,7 +241,7 @@ pub mod file_functions {
     pub fn position(file: &mut SharedFile) -> Result<rhai::INT, Box<EvalAltResult>> {
         match borrow_mut(file).stream_position() {
             Ok(pos) => convert_to_int(pos),
-            Err(e) => Err(format!("{}", &e).into()),
+            Err(e) => Err(e.to_string().into()),
         }
     }
 
@@ -202,7 +250,7 @@ pub mod file_functions {
     pub fn bytes(file: &mut SharedFile) -> Result<rhai::INT, Box<EvalAltResult>> {
         match borrow_mut(file).metadata() {
             Ok(md) => convert_to_int(md.len()),
-            Err(e) => Err(format!("{}", &e).into()),
+            Err(e) => Err(e.to_string().into()),
         }
     }
 
@@ -232,7 +280,12 @@ pub mod file_functions {
             let res = match max_len {
                 0 if len == 0 => borrow_mut(file).read_to_end(&mut buf),
                 0 if len > 0 => {
-                    buf.resize(len as usize, 0);
+                    // Handle 32-bit `usize` with `i64`
+                    let len = usize::try_from(len)
+                        .or_else(|_| usize::try_from(rhai::INT::MAX))
+                        .expect("converting to `usize` should not fail");
+
+                    buf.resize(len, 0);
                     borrow_mut(file).read(&mut buf)
                 }
                 _ if len == 0 => {
@@ -240,14 +293,19 @@ pub mod file_functions {
                     borrow_mut(file).read(&mut buf)
                 }
                 _ => {
-                    buf.resize(max_len.min(len as usize), 0);
+                    // Handle 32-bit `usize` with `i64`
+                    let len = usize::try_from(len)
+                        .or_else(|_| usize::try_from(rhai::INT::MAX))
+                        .expect("converting to `usize` should not fail");
+
+                    buf.resize(max_len.min(len), 0);
                     borrow_mut(file).read(&mut buf)
                 }
             };
 
             match res {
                 Ok(_) => Ok(buf),
-                Err(e) => Err(format!("{}", &e).into()),
+                Err(e) => Err(e.to_string().into()),
             }
         }
 
@@ -259,7 +317,7 @@ pub mod file_functions {
         ) -> Result<rhai::INT, Box<EvalAltResult>> {
             match borrow_mut(&mut file).read(blob) {
                 Ok(len) => convert_to_int(len),
-                Err(e) => Err(format!("{}", &e).into()),
+                Err(e) => Err(e.to_string().into()),
             }
         }
 
@@ -271,7 +329,7 @@ pub mod file_functions {
         ) -> Result<rhai::INT, Box<EvalAltResult>> {
             match borrow_mut(&mut file).write(blob) {
                 Ok(len) => convert_to_int(len),
-                Err(e) => Err(format!("{}", &e).into()),
+                Err(e) => Err(e.to_string().into()),
             }
         }
     }
